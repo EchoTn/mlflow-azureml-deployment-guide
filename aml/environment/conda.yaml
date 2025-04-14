@@ -1,0 +1,13 @@
+name: iris-env
+dependencies:
+  - python=3.10
+  - pip:
+      - mlflow-skinny==2.16.2
+      - azureml-mlflow==1.57.0.post1
+      - scikit-learn==1.5.2
+      - azureml-inference-server-http==1.4.0
+      - joblib==1.4.2
+      - azure-ai-ml==1.20.0
+      - azureml-defaults==1.59.0
+      - azureml-ai-monitoring==1.0.0
+      - pandas==2.2.3
