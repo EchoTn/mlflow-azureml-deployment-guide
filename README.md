@@ -2,7 +2,7 @@
 *A Complete Guide to Real-Time Inference with Custom Scoring & Monitoring*
 
 This repository supports the Medium article: 
-📖 [Serving MLflow Models on Azure ML](https://medium.com/@henkel-data-and-analytics/f69d40bdcb55)
+📖 [Serving MLflow Models on Azure ML](https://medium.com/henkel-data-and-analytics/serving-mlflow-models-on-azure-ml-deploy-with-online-endpoints-and-custom-scoring-scripts-f69d40bdcb55)
 
 > "**Deploying machine learning models shouldn’t mean wrestling with infrastructure.**"
 > With Azure ML's Managed Online Endpoints, you get scalable, secure, real-time inferencing without managing VMs or Kubernetes.
