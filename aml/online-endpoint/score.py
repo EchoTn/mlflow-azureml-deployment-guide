@@ -53,6 +53,7 @@ import joblib
 import os
 import pandas as pd
 import json
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -63,13 +64,12 @@ logger.propagate = True
 def init():
     """
     Function which is run once within the endpoint right after it is created.
-    
+
     Initializes the following:
     - model
     - collectors for input and output monitoring
-    - context for correlation in logs
     """
-    global model, inputs_collector, outputs_collector, artificial_context
+    global model, inputs_collector, outputs_collector
 
     # Initialize collectors for input and output data
     inputs_collector = Collector(
@@ -79,24 +79,20 @@ def init():
         name="model_outputs", on_error=lambda e: logging.info(f"ex:{e}")
     )
 
-    # Create correlation context (for logging and tracing)
-    artificial_context = BasicCorrelationContext(id="iris_endpoint")
-
     # Load the model
     model = _load_model()
 
     logger.info("Init completed")
 
+
 def _load_model():
     """
     Load the pre-trained model from the path provided by Azure ML.
-    
+
     Returns:
         model: The loaded model.
     """
-    model_path = os.path.join(
-        os.getenv("AZUREML_MODEL_DIR"), "model/model.pkl"
-    )
+    model_path = os.path.join(os.getenv("AZUREML_MODEL_DIR"), "model/model.pkl")
     model = joblib.load(model_path)
     logger.info(f"Model loaded from {model_path}")
     return model
@@ -106,21 +102,25 @@ def _load_model():
 def run(raw_data):
     """
     Function which is called for every API request to make predictions.
-    
+
     Args:
         request: The HTTP request containing the input data.
-        
+
     Returns:
         AMLResponse: The prediction results or error response.
     """
-    
+
     try:
         logging.info("Request received")
+        # Decode raw HTTP request body and parse the JSON
         raw_data = raw_data.get_data().decode("utf-8")
         data = json.loads(raw_data)["input_data"]
 
         # Convert input data to pandas DataFrame
         input_df = pd.DataFrame(data)
+
+        # Create a unique correlation ID for this request to enable traceability
+        artificial_context = BasicCorrelationContext(id=str(uuid.uuid4()))
 
         # Collect input data for monitoring
         context = inputs_collector.collect(input_df, artificial_context)
@@ -128,16 +128,14 @@ def run(raw_data):
         # Make the prediction using the model
         result = model.predict(input_df)
 
-         # Collect output data for monitoring
+        # Collect output data for monitoring
         outputs_collector.collect(result, context)
-        
+
         # Log the prediction response
         logging.info(f"Prediction response: {result}")
         return result.tolist()
-    
+
     except Exception as error:
         # Log and return the error if something goes wrong
         logging.error(f"Error during prediction: {repr(error)}")
         return AMLResponse(repr(error), status_code=400)
-
-

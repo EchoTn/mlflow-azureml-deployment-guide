@@ -44,7 +44,7 @@ def main():
         image="mcr.microsoft.com/azureml/mlflow-ubuntu20.04-py38-cpu-inference:latest",
     )
 
-    # Create or update environment in AML
+    # Create or update the environment in Azure ML
     print("Creating or updating environment...")
     env_creation_job = ml_client.environments.create_or_update(env_definition)
     print(

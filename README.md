@@ -2,7 +2,7 @@
 *A Complete Guide to Real-Time Inference with Custom Scoring & Monitoring*
 
 This repository supports the Medium article: 
-📖 [Serving MLflow Models on Azure ML](https://medium.com/...)
+📖 [Serving MLflow Models on Azure ML](https://medium.com/@henkel-data-and-analytics/f69d40bdcb55)
 
 > "**Deploying machine learning models shouldn’t mean wrestling with infrastructure.**"
 > With Azure ML's Managed Online Endpoints, you get scalable, secure, real-time inferencing without managing VMs or Kubernetes.
@@ -14,7 +14,6 @@ This guide walks you through:
 - ✅ Training & logging a model with **MLflow**
 - 🧪 Creating a custom **Azure ML Environment**
 - ✍️ Writing a custom **scoring script** with input/output monitoring
-- 🔐 Securing inference with **OAuth2**
 - 🚀 Deploying to **Azure ML Managed Online Endpoints**
 - 📡 Sending authenticated prediction requests via REST
 
@@ -25,11 +24,9 @@ This guide walks you through:
 │   ├── environment/
 │   │   ├── conda.yaml      # Conda environment definition
 │   │   └── create_env.py   # Registers the Conda environment
-│   └── online-enpoint/        
+│   └── online-endpoint/        
 │   │   ├── deploy.yaml     # Script to deploy model to endpoint
 │   │   └── score.py        # Scoring script with monitoring integration
-├── notebooks/
-│   └── tutorial.ipynb      # Optional: interactive walkthrough
 │
 ├── src/
 │   └── train.py            # MLflow-based training and model logging
@@ -43,9 +40,11 @@ This guide walks you through:
 
 - Azure subscription & ML workspace
 - Python 3.8+
-- Azure ML SDK v2:  
-`pip install azure-ai-ml`
-
+- Azure ML SDK v2 installed in your environment: pip install azure-ai-ml
+- mlflow-skinny
+- azureml-mlflow (Mlflow extension on Azure)
+- scikit-learn
+- pandas
  
 ## 🚀 Quickstart
 
@@ -86,13 +85,29 @@ This script:
 - Creates a Managed Online Endpoint in Azure ML
 
 ### 4️⃣ Send Authenticated Requests (TBA)
+You can call your endpoint using the following python code sample:
+```python
+import requests
 
+token = "<your_access_token>"
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "application/json"
+}
 
+payload = {
+    "input_data": [{
+        "sepal length (cm)": 5.1,
+        "sepal width (cm)": 3.5,
+        "petal length (cm)": 1.4,
+        "petal width (cm)": 0.2
+    }]
+}
 
-## 📚 Resources
+url = f"https://<region>.inference.ml.azure.com/endpoint/iris-model-endpoint/score"
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
+```
+If the request is successful you will get a 200 response status and the predicted flower species.
 
-[Azure ML SDK v2](https://learn.microsoft.com/azure/machine-learning/)
-
-[MLflow Docs](https://mlflow.org/docs/latest/index.html)
-
-[Managed Online Endpoints](https://learn.microsoft.com/azure/machine-learning/concept-endpoints)
+❗If you encounter a `401: JWT is missing` error, make sure you’ve correctly fetched your bearer token and included it in the request headers.

@@ -124,6 +124,7 @@ def create_online_endpoint(ml_client, endpoint_name):
         raise
     return endpoint
 
+
 def deploy_model(ml_client, model, endpoint_name, deployment_name, environment):
     """
     Deploy the model to the online endpoint.
@@ -131,13 +132,16 @@ def deploy_model(ml_client, model, endpoint_name, deployment_name, environment):
     deployment = ManagedOnlineDeployment(
         name=deployment_name,
         endpoint_name=endpoint_name,
-        model=model,
+        model=model,  # The model to be deployed
         environment=environment,  # Specify the registered environment
-        code_path=".",
+        code_path=".",  # Path to the folder containing your code and scoring script
         scoring_script="score.py",  # Path to your custom scoring script
         instance_type="Standard_DS2_v2",  # Specify compute for deployment
         instance_count=1,  # Number of instances to deploy
-        data_collector=DataCollector(collections=collections),
+        data_collector=DataCollector(
+            collections=collections
+        ),  # Attach a DataCollector for logging requests/responses
+        app_insights_enabled=True,  # Enable Application Insights for telemetry and diagnostics
     )
 
     try:
@@ -176,7 +180,6 @@ def main():
     # Update the traffic
     endpoint.traffic = {deployment_name: 100}
     ml_client.online_endpoints.begin_create_or_update(endpoint).wait()
-
 
 
 if __name__ == "__main__":

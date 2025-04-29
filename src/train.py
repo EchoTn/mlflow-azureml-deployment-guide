@@ -9,8 +9,8 @@ This script performs the following steps:
 5. Uses MLflow to log parameters, track the run, and register the trained model in the Azure ML model registry.
 
 Functions:
-- `load_and_preprocess_data()`: 
-    Loads the Iris dataset from scikit-learn, applies preprocessing (scaling), 
+- `load_and_preprocess_data()`:
+    Loads the Iris dataset from scikit-learn, applies preprocessing (scaling),
     and returns DataFrame-formatted train and test sets with feature column names preserved.
 
 - `train_and_log_model(X_train, y_train)`:
@@ -50,13 +50,17 @@ logger = logging.getLogger(__name__)
 # Set experiment in MLflow
 mlflow.set_experiment("iris-flower-classification")
 
+
 # Function to load and preprocess the data
 def load_and_preprocess_data():
     try:
         # Load the Iris dataset
         iris = load_iris(as_frame=True)
         X = iris.frame.drop(columns="target")  # Features
-        y = iris.target  # Labels (species)
+        class_names = iris.target_names
+        y = [
+            class_names[i] for i in iris.target
+        ]  # Convert numeric targets to string labels
 
         feature_columns = X.columns
 
@@ -71,7 +75,7 @@ def load_and_preprocess_data():
         X_test = scaler.transform(X_test)
 
         X_train = pd.DataFrame(X_train, columns=feature_columns)
-        X_test = pd.DataFrame(X_test, columns=feature_columns)   
+        X_test = pd.DataFrame(X_test, columns=feature_columns)
 
         logger.info("Data loaded and preprocessed successfully.")
         return X_train, X_test, y_train, y_test
@@ -80,18 +84,17 @@ def load_and_preprocess_data():
         logger.error(f"Error loading or preprocessing data: {e}")
         raise
 
+
 # Function to train the model, log metrics, and register the model
 def train_and_log_model(X_train, y_train):
     try:
         # Initialize the classifier (Logistic Regression)
-        model = LogisticRegression(random_state=42, max_iter=200)
+        model = LogisticRegression(max_iter=200)
 
         # Start an MLflow run
         with mlflow.start_run() as run:
-            # Log hyperparameters
-            mlflow.log_param("max_iter", 200)
 
-            # Log metrics and models automatically
+            # Log parameters, metrics, and model automatically
             mlflow.sklearn.autolog(log_datasets=False)
 
             # Train the model on the training data
@@ -107,10 +110,12 @@ def train_and_log_model(X_train, y_train):
         logger.error(f"Error during model training or logging: {e}")
         raise
 
+
 # Main function to orchestrate the workflow
 def main():
     X_train, X_test, y_train, y_test = load_and_preprocess_data()
     train_and_log_model(X_train, y_train)
+
 
 if __name__ == "__main__":
     main()
