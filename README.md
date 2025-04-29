@@ -84,8 +84,9 @@ This script:
 - Deploys it with the custom scoring script score.py
 - Creates a Managed Online Endpoint in Azure ML
 
-### 4️⃣ Send Authenticated Requests (TBA)
+### 4️⃣ Send Authenticated Requests
 You can call your endpoint using the following python code sample:
+
 ```python
 import requests
 
